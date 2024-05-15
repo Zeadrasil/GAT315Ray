@@ -16,12 +16,19 @@ inline Vector2 CreateVector2(float x, float y)
 	return (Vector2){ x, y };
 }
 
-inline Vector2 AddVector2(Vector2 a, Vector2 b)
+inline Vector2 GetVector2FromAngle(float angle)
 {
-	return CreateVector2(a.x + b.x, a.y + b.y);
+	Vector2 v;
+	v.x = cosf(angle);
+	v.y = sinf(angle);
+	return v;
 }
 
-inline Vector2 MultiplyVector2(Vector2 vector, float multiplyBy)
+inline float Max(float a, float b)
 {
-	return CreateVector2(vector.x * multiplyBy, vector.y * multiplyBy);
+	if (a > b)
+	{
+		return a;
+	}
+	return b;
 }

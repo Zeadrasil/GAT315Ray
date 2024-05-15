@@ -15,16 +15,52 @@
     <ClCompile Include="world.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="body.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="render.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="editor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="spring.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="contact.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="collision.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="body.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="integrator.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mathf.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="world.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="contact.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="collision.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
