@@ -32,25 +32,31 @@ void CreateContacts(ncBody* bodies, ncContact** contacts)
 }
 ncContact* GenerateContact(ncBody* body1, ncBody* body2)
 {
+	//allocates space for contact
 	ncContact* contact = (ncContact*)malloc(sizeof(ncContact));
 	assert(contact);
-
 	memset(contact, 0, sizeof(ncContact));
 
+	//sets bodies of contact
 	contact->body1 = body1;
 	contact->body2 = body2;
 
+	//gets the contact direction
 	Vector2 direction = Vector2Subtract(body1->position, body2->position);
+	//gets how far apart the bodies in the collision are at time of collision
 	float distance = Vector2Length(direction);
+	//ensures that 2 objects are never in the exact same spot
 	if (distance == 0)
 	{
 		direction = (Vector2){ GetRandomFloatValue(-0.05f, 0.05f), GetRandomFloatValue(-0.05f, 0.05f) };
 	}
-
+	//gets the total width that the collision can potentially cover
 	float radius = (body1->mass + body2->mass);
-
+	//sets the depth of the collision to how much of the collision area is covered
 	contact->depth = radius - distance;
+	//sets the normal of the collision direction
 	contact->normal = Vector2Normalize(direction);
+	//sets the overall restitution of the collision, taking the restitution of both bodies into account
 	contact->restitution = (body1->restitution + body2->restitution) * 0.5f;
 
 	return contact;
