@@ -61,7 +61,7 @@ void DrawEditor(Vector2 position)
         GuiSliderBar((Rectangle) { editorData.anchor.x + 104, editorData.anchor.y + 176, 120, 16 }, "Mass Max", NULL, & editorData.massMax, editorData.massMin, MassMaxValue);
         GuiSliderBar((Rectangle) { editorData.anchor.x + 104, editorData.anchor.y + 216, 120, 16 }, "Gravity Scale", NULL, & editorData.gravityScale, GravityScaleMinValue, GravitationMaxValue);
         GuiSliderBar((Rectangle) { editorData.anchor.x + 104, editorData.anchor.y + 256, 120, 16 }, "Damping", NULL, & editorData.damping, DampingMinValue, DampingMaxValue);
-        GuiColorPicker((Rectangle) { editorData.anchor.x + 296, editorData.anchor.y + 88, 152, 152 }, NULL, & editorData.color);
+        GuiColorPicker((Rectangle) { editorData.anchor.x + 296, editorData.anchor.y + 88, 152, 152 }, "Body Color", & editorData.color);
         GuiGroupBox((Rectangle) { editorData.anchor.x + 272, editorData.anchor.y + 56, 224, 232 }, "Color");
         GuiCheckBox((Rectangle) { editorData.anchor.x + 304, editorData.anchor.y + 248, 24, 24 }, "Random Body Color", & editorData.randomColor);
         GuiSliderBar((Rectangle) { editorData.anchor.x + 88, editorData.anchor.y + 304, 408, 32 }, "Gravitation", NULL, & editorData.gravitation, 0, 100);

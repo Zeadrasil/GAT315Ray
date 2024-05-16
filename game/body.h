@@ -46,7 +46,7 @@ inline void ApplyForce(ncBody* body, Vector2 force, ncForceMode forceMode)
 			body->force = Vector2Add(body->force, force);
 			break;
 		case FM_IMPULSE:
-			body->velocity = Vector2Scale(force, body->inverseMass);
+			body->velocity = Vector2Add(Vector2Scale(force, body->inverseMass), body->velocity);
 			break;
 		case FM_VELOCITY:
 			body->velocity = force;

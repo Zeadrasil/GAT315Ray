@@ -58,9 +58,37 @@ ncContact* GenerateContact(ncBody* body1, ncBody* body2)
 
 void SeparateContacts(ncContact* contacts)
 {
-
+	//loop through all contacts	
+	for (ncContact* contact = contacts; contact; contact = contact->next)
+	{
+		//get total inverse mass
+		float totalInverse = contact->body1->inverseMass + contact->body2->inverseMass;
+		//get vector required to separate contact bodies
+		Vector2 separation = Vector2Scale(contact->normal, contact->depth / totalInverse);
+		//move bodies so that they are no longer inside each other
+		contact->body1->position = Vector2Add(contact->body1->position, Vector2Scale(separation, contact->body1->inverseMass));
+		contact->body2->position = Vector2Add(contact->body2->position, Vector2Scale(separation, -contact->body2->inverseMass));
+	}
 }
 void ResolveContacts(ncContact* contacts)
 {
-
+	//loop thorugh all contacts
+	for (ncContact* contact = contacts; contact; contact = contact->next)
+	{
+		//get relative velocities of contact bodies
+		Vector2 relativeVelocity = Vector2Subtract(contact->body1->velocity, contact->body2->velocity);
+		//gets the scale of the component of relative velocity that is based on contact normal
+		float normalVelocity = Vector2DotProduct(relativeVelocity, contact->normal);
+		//if they are already separating, do nothing
+		if (normalVelocity > 0) continue;
+		//gets total inverse mass
+		float totalInverse = contact->body1->inverseMass + contact->body2->inverseMass;
+		//gets the magnitude of the force that they will bounce off of each other with
+		float magnitude = (1 + contact->restitution) * normalVelocity / totalInverse;
+		//gets the force they bounce off of each other with using the magnitude of the force and the contact normal
+		Vector2 impulse = Vector2Scale(contact->normal, magnitude);
+		//applies force of bounce as an impulse
+		ApplyForce(contact->body1, Vector2Scale(impulse, -1), FM_IMPULSE);
+		ApplyForce(contact->body2, impulse, FM_IMPULSE);
+	}
 }

@@ -129,6 +129,8 @@ int main(void)
 		//collision
 		ncContact* contacts = NULL;
 		CreateContacts(ncBodies, &contacts);
+		SeparateContacts(contacts);
+		ResolveContacts(contacts);
 		//Draw
 		BeginDrawing();
 		ClearBackground(BLACK);
@@ -137,22 +139,31 @@ int main(void)
 		DrawText(TextFormat("Frame: %.4f", dt * 1000), 10, 30, 20, LIME);
 		DrawText(TextFormat("Bodies: %i", ncBodyCount), 10, 50, 20, LIME);
 		DrawText(TextFormat("Springs: %i", ncSpringCount), 10, 70, 20, LIME);
-
+		int i = 0;
+		ncContact* contact = contacts;
+		while(contact)
+		{
+			i++;
+			contact = contact->next;
+		}
+		DrawText(TextFormat("Contacts: %i", i), 10, 90, 20, LIME);
 		//DrawCircle((int)position.x, (int)position.y, 20, YELLOW);
 		body = ncBodies;
 		while (body)
 		{
 			Vector2 screen = ConvertWorldToScreen(body->position);
-			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel(body->mass), body->color);
+			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel(body->mass * 0.5f), body->color);
+			Vector2 laterScreen = ConvertWorldToScreen(Vector2Add(body->position, Vector2Scale(body->velocity, 5)));
+			DrawLine((int)screen.x, (int)screen.y, (int)laterScreen.x, (int)laterScreen.y, WHITE);
 			body = body->next;
 		}
-		/*ncContact* contact = contacts;
+		contact = contacts;
 		while (contact)
 		{
 			Vector2 screen = ConvertWorldToScreen(Vector2Scale(Vector2Add(contact->body1->position,contact->body2->position), 0.5f));
-			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel((contact->body1->mass + contact->body2->mass) * 0.25f), RED);
+			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel((contact->body1->mass + contact->body2->mass) * 0.125f), RED);
 			contact = contact->next;
-		}*/
+		}
 		EndDrawing();
 	}
 	free(ncBodies);
