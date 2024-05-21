@@ -65,3 +65,19 @@ void ApplySpringForce(ncSpring* spring)
 		ApplyForce(spring->right, Vector2Scale(ndirection, -force), FM_FORCE);
 	}
 }
+
+void DeleteSpringsWithBody(ncBody* body, ncSpring* springs)
+{
+	ncSpring* previous;
+	for(ncSpring* spring = springs; spring; spring = spring->next)
+	{
+		if (body == spring->left || body == spring->right)
+		{
+			previous->next = spring->next;
+		}
+		else
+		{
+			previous = spring;
+		}
+	}
+}

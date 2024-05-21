@@ -15,6 +15,7 @@ ncBody* CreateBody(Vector2 position, float mass, ncBodyType bodyType)
 	body->mass = mass;
 	body->inverseMass = (bodyType == BT_DYNAMIC) ? 1 / mass : 0;
 	body->type = bodyType;
+	body->restitution = 0.8f;
 	AddBody(body);
 	return body;
 }

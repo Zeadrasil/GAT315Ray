@@ -13,6 +13,7 @@
 #include "contact.h"
 #define MAX_BODIES 10000
 #define MAX_SPRINGS 10000000
+#define MAX_AGE 120
 #define CREATION_TYPE 0
 int main(void)
 {
@@ -21,14 +22,15 @@ int main(void)
 	InitWindow(2560, 1440, "Physics Engine");
 	InitEditor();
 	SetTargetFPS(100);
-
+	float fixedTimeDelta = 0;
+	float stepSize = 1.0f / 60;
 	while (!WindowShouldClose())
 	{
 		//Update
 		float dt = GetFrameTime();
 		float fps = (float)GetFPS();
 		Vector2 position = GetMousePosition();
-
+		fixedTimeDelta += dt;
 		UpdateEditor(position);
 		ncScreenZoom += GetMouseWheelMove() * 0.1f;
 		ncScreenZoom = Clamp(ncScreenZoom, 0.1, 10);
@@ -104,33 +106,38 @@ int main(void)
 			ncSpring* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position) * editorData.desiredLengthModifier, editorData.stiffness);
 		}
 		ncBody* body = ncBodies;
-		ApplyGravitation(body, editorData.gravitation);
-		while (body)
-		{
-			/*if (body->age > 100)
-			{
-				ncBody* holder = body;
-				body = body->next;
-				DestroyBody(holder);
-			}
-			else
-			{*/
-				Step(body, dt);
-				body = body->next;
-			//}
-		}
-		//spring
-		ncSpring* spring = ncSprings;
-		while (spring)
-		{
-			ApplySpringForce(spring);
-			spring = spring->next;
-		}
-		//collision
 		ncContact* contacts = NULL;
-		CreateContacts(ncBodies, &contacts);
-		SeparateContacts(contacts);
-		ResolveContacts(contacts);
+		while (fixedTimeDelta > stepSize)
+		{
+			while (body)
+			{
+				if (body->age > MAX_AGE)
+				{
+					ncBody* holder = body;
+					body = body->next;
+					DeleteSpringsWithBody(holder, ncSprings);
+					DestroyBody(holder);
+				}
+				else
+				{
+					Step(body, stepSize);
+					body = body->next;
+				}
+			}
+			ApplyGravitation(body, editorData.gravitation);
+			//spring
+			ncSpring* spring = ncSprings;
+			while (spring)
+			{
+				ApplySpringForce(spring);
+				spring = spring->next;
+			}
+			//collision
+			CreateContacts(ncBodies, &contacts);
+			SeparateContacts(contacts);
+			ResolveContacts(contacts);
+			fixedTimeDelta -= stepSize;
+		}
 		//Draw
 		BeginDrawing();
 		ClearBackground(BLACK);

@@ -18,3 +18,4 @@ void AddSpring(ncSpring* spring);
 void DestroySpring(ncSpring* spring);
 
 void ApplySpringForce(ncSpring* spring);
+void DeleteSpringsWithBody(ncBody* body, ncSpring* springs);
