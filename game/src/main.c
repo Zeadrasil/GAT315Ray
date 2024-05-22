@@ -23,23 +23,19 @@ int main(void)
 	InitEditor();
 	SetTargetFPS(100);
 	float fixedTimeDelta = 0;
-	float stepSize = 1.0f / 60;
 	while (!WindowShouldClose())
 	{
-		//Update
+		//Time related updates
+		float stepSize = 1.0f / editorData.physicsFrames;
 		float dt = GetFrameTime();
 		float fps = (float)GetFPS();
-		Vector2 position = GetMousePosition();
 		fixedTimeDelta += dt;
+		//Updates based on mouse
+		Vector2 position = GetMousePosition();
 		UpdateEditor(position);
 		ncScreenZoom += GetMouseWheelMove() * 0.1f;
 		ncScreenZoom = Clamp(ncScreenZoom, 0.1, 10);
-		selectedBody = GetBodyIntersect(ncBodies, position);
-		if (selectedBody)
-		{
-			Vector2 screen = ConvertWorldToScreen(selectedBody->position);
-			DrawCircleLines(screen.x, screen.y, ConvertWorldToPixel(selectedBody->mass) * 1.5f, YELLOW);
-		}
+		//Body Creation
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && ncBodyCount < MAX_BODIES && !editorData.editingBody)
 		{
 			Color color = editorData.randomColor ? ColorFromHSV(GetRandomFloatValue(0, 360), 1, 1) : editorData.color;
@@ -93,59 +89,91 @@ int main(void)
 			}
 			}
 		}
+		//Spring creation
+		selectedBody = GetBodyIntersect(ncBodies, position);
+		//Draws circle around the body your mouse is over
+		if (selectedBody)
+		{
+			Vector2 screen = ConvertWorldToScreen(selectedBody->position);
+			DrawCircleLines(screen.x, screen.y, ConvertWorldToPixel(selectedBody->mass) * 1.5f, YELLOW);
+		}
+		//Stores the body you are over when you right click in order to ceate spring
 		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && selectedBody)
 		{
 			connectBody = selectedBody;
 		}
+		//Draws line from stored body in order to tell which body you selected
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && connectBody)
 		{
 			DrawLineBodyToPosition(connectBody, position);
 		}
-		if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && connectBody && selectedBody != connectBody)
+		//Creates spring when two bodies are connected
+		if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT) && connectBody)
 		{
-			ncSpring* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position) * editorData.desiredLengthModifier, editorData.stiffness);
+			if (selectedBody && selectedBody != connectBody )
+			{
+				ncSpring* spring = CreateSpring(connectBody, selectedBody, Vector2Distance(connectBody->position, selectedBody->position) * editorData.desiredLengthModifier, editorData.stiffness);
+			}
+			connectBody = NULL;
 		}
+		//Physics updates
 		ncBody* body = ncBodies;
 		ncContact* contacts = NULL;
 		while (fixedTimeDelta > stepSize)
 		{
-			while (body)
+			if (editorData.playing)
 			{
-				if (body->age > MAX_AGE)
+				//Drag bodies
+				if (connectBody)
 				{
-					ncBody* holder = body;
-					body = body->next;
-					DeleteSpringsWithBody(holder, ncSprings);
-					DestroyBody(holder);
+					ApplySpringForcePosition(ConvertScreenToWorld(position), connectBody, Vector2Distance(connectBody->position, ConvertScreenToWorld(position)) * 0.5f, editorData.stiffness, 0.5f);
 				}
-				else
+				while (body)
 				{
-					Step(body, stepSize);
-					body = body->next;
+					//Kills bodies from old age or clearing everything
+					if (body->age > MAX_AGE || editorData.deleteThings)
+					{
+						ncBody* holder = body;
+						body = body->next;
+						//Destroy springs associated with the body
+						DeleteSpringsWithBody(holder);
+						DestroyBody(holder);
+					}
+					//Updates physics if it is not going to get killed
+					else
+					{
+						Step(body, stepSize);
+						body = body->next;
+					}
 				}
+				//Disable deletion so no constant deletion
+				editorData.deleteThings = false;
+				//Gravity
+				ApplyGravitation(ncBodies, editorData.gravitation);
+				//Spring physics
+				ncSpring* spring = ncSprings;
+				while (spring)
+				{
+					ApplySpringForce(spring);
+					spring = spring->next;
+				}
+				//Collision
+				CreateContacts(ncBodies, &contacts);
+				SeparateContacts(contacts);
+				ResolveContacts(contacts);
 			}
-			ApplyGravitation(body, editorData.gravitation);
-			//spring
-			ncSpring* spring = ncSprings;
-			while (spring)
-			{
-				ApplySpringForce(spring);
-				spring = spring->next;
-			}
-			//collision
-			CreateContacts(ncBodies, &contacts);
-			SeparateContacts(contacts);
-			ResolveContacts(contacts);
 			fixedTimeDelta -= stepSize;
 		}
 		//Draw
 		BeginDrawing();
 		ClearBackground(BLACK);
 		DrawEditor(position);
+		//Debug data
 		DrawText(TextFormat("FPS: %.2f", fps), 10, 10, 20, LIME);
 		DrawText(TextFormat("Frame: %.4f", dt * 1000), 10, 30, 20, LIME);
 		DrawText(TextFormat("Bodies: %i", ncBodyCount), 10, 50, 20, LIME);
 		DrawText(TextFormat("Springs: %i", ncSpringCount), 10, 70, 20, LIME);
+		//Contact information since no constant contact info due t implementation
 		int i = 0;
 		ncContact* contact = contacts;
 		while(contact)
@@ -155,15 +183,18 @@ int main(void)
 		}
 		DrawText(TextFormat("Contacts: %i", i), 10, 90, 20, LIME);
 		//DrawCircle((int)position.x, (int)position.y, 20, YELLOW);
+		//Draw Bodies
 		body = ncBodies;
 		while (body)
 		{
 			Vector2 screen = ConvertWorldToScreen(body->position);
 			DrawCircle((int)screen.x, (int)screen.y, ConvertWorldToPixel(body->mass * 0.5f), body->color);
 			Vector2 laterScreen = ConvertWorldToScreen(Vector2Add(body->position, Vector2Scale(body->velocity, 5)));
+			//Draws line representing velocity
 			DrawLine((int)screen.x, (int)screen.y, (int)laterScreen.x, (int)laterScreen.y, WHITE);
 			body = body->next;
 		}
+		//Draw contacts
 		contact = contacts;
 		while (contact)
 		{

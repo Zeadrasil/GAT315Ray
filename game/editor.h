@@ -18,6 +18,10 @@ typedef struct ncEditorData
 	Vector2 anchor;
 	float desiredLengthModifier;
 	float stiffness;
+	float restitution;
+	float physicsFrames;
+	bool deleteThings;
+	bool playing;
 }ncEditorData_t;
 
 extern ncEditorData_t editorData;

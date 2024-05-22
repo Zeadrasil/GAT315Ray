@@ -4,7 +4,7 @@
 #include <assert.h>
 ncBody* ncBodies = NULL;
 int ncBodyCount = 0;
-Vector2 ncGravity = { 0, 19.6f };
+Vector2 ncGravity = { 0, 0/*19.6f*/ };
 
 ncBody* CreateBody(Vector2 position, float mass, ncBodyType bodyType)
 {

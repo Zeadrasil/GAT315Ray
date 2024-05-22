@@ -18,4 +18,5 @@ void AddSpring(ncSpring* spring);
 void DestroySpring(ncSpring* spring);
 
 void ApplySpringForce(ncSpring* spring);
-void DeleteSpringsWithBody(ncBody* body, ncSpring* springs);
+void DeleteSpringsWithBody(struct ncBody* body);
+void ApplySpringForcePosition(struct Vector2 position, struct ncBody* body, float restLength, float k, float damping);

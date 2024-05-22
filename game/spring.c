@@ -50,34 +50,67 @@ void DestroySpring(ncSpring* spring)
 
 void ApplySpringForce(ncSpring* spring)
 {
+	//iterate through all springs
 	for (ncSpring* spring = ncSprings; spring; spring = spring->next)
 	{
+		//difference between positions of spring bodies
 		Vector2 direction = Vector2Subtract(spring->left->position, spring->right->position);
+		//skip if same position
 		if (direction.x == 0 && direction.y == 0) continue;
-
+		//distance between positions
 		float length = Vector2Length(direction);
+		//distance from optimal distance
 		float x = spring->desiredLength - length;
+		//hookes law
 		float force = x * spring->stiffness;
-
+		//normalized direction
 		Vector2 ndirection = Vector2Normalize(direction);
-
-		ApplyForce(spring->left, Vector2Scale(ndirection, force), FM_FORCE);
-		ApplyForce(spring->right, Vector2Scale(ndirection, -force), FM_FORCE);
+		//gets the force to apply to bodies by scaling direction by the force magnitude and applying damping
+		ApplyForce(spring->left, Vector2Scale(ndirection, force + Vector2DotProduct(spring->left->velocity, ndirection) * 0.5f), FM_FORCE);
+		ApplyForce(spring->right, Vector2Scale(ndirection, -force - Vector2DotProduct(spring->right->velocity, ndirection) * 0.5f), FM_FORCE);
 	}
 }
 
-void DeleteSpringsWithBody(ncBody* body, ncSpring* springs)
+void DeleteSpringsWithBody(ncBody* body)
 {
-	ncSpring* previous;
-	for(ncSpring* spring = springs; spring; spring = spring->next)
+	ncSpring* spring = ncSprings;
+	while( spring)
 	{
+		//if spring uses body
 		if (body == spring->left || body == spring->right)
 		{
-			previous->next = spring->next;
+			//remove spring from springs
+			ncSpring* holder = spring->next;
+			DestroySpring(spring);
+			spring = holder;
 		}
 		else
 		{
-			previous = spring;
+			spring = spring->next;
 		}
 	}
+}
+
+void ApplySpringForcePosition(Vector2 position, ncBody* body, float restLength, float k, float damping)
+{
+	//return if no body
+	if (!body) return;
+	//direction to apply force
+	Vector2 direction = Vector2Subtract(position, body->position);
+	//return if no direction
+	if (direction.x == 0 && direction.y == 0) return;
+	//distance between position and body
+	float length = Vector2Length(direction);
+	//distance from optimal position
+	float x = restLength - length;
+	//hookes law
+	float force = x * k;
+	//normalize direction
+	Vector2 ndirection = Vector2Normalize(direction);
+	//damping to reduce oscillization
+	float dampingForce = damping * Vector2DotProduct(body->velocity, ndirection);
+	//total force to apply
+	float totalForce = force + dampingForce;
+	//applies force
+	ApplyForce(body, Vector2Scale(ndirection, -totalForce), FM_FORCE);
 }
